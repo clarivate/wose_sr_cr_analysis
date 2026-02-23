@@ -4,6 +4,10 @@ import random
 from typing import Any, List, Dict, Optional
 import requests
 
+class WoSAuthenticationError(Exception):
+    """Raised when the WoS API returns 401/403 (invalid key or insufficient access)."""
+    pass
+
 BASE_URL = 'https://wos-api.clarivate.com/api/wos/references'
 CONNECT_TIMEOUT = 10  # seconds
 READ_TIMEOUT = 60     # seconds
@@ -21,6 +25,13 @@ def _request_with_retries(url: str, headers: Dict[str, str], params: Dict[str, A
                 time.sleep(wait)
                 backoff = min(backoff * 2, 8.0)
                 continue
+            # Friendly message for invalid/unauthorized API key
+            if r.status_code in (401, 403):
+                raise WoSAuthenticationError(
+                    f"\nWeb of Science API authentication/authorization failed (HTTP {r.status_code}).\n\n"
+                    f"This usually means your API key is invalid/expired, or the key does not have access to this endpoint/collection.\n\n"
+                    f"Check that EXPANDED_APIKEY (or the key you passed) is correct, active, and has WoS Expanded API access.\n"
+                )            
             r.raise_for_status()
             return r
         except requests.exceptions.RequestException:
