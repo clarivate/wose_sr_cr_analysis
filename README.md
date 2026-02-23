@@ -42,11 +42,33 @@ EXPANDED_APIKEY=YOUR_WOS_EXPANDED_API_KEY
 
 ## Running the script
 
-Basic usage:
+You can run the script in two ways:
 
+### Option 1 — Edit the query directly in the script
+
+Update the `usrQuery` value in the `params` section near the top of `wose_sr_cr_analysis.py`.
+
+Example:
+
+```python
+params = {
+    'databaseId': 'WOS',
+    'usrQuery': '**AU=Stanwood**',
+    'firstRecord': 1,
+    'count': 50,
+    'optionView': 'SR'
+}
+```
+Then run
+```bash
+python wose_sr_cr_analysis.py
+```
+### Option 2 - Use the CLI
+You can override the query at runtime using the -q flag:
 ```bash
 python wose_sr_cr_analysis.py -q "AU=Stanwood"
 ```
+CLI arguments override the default params values defined in the script.
 
 ### Options
 
