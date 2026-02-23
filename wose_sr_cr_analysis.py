@@ -13,6 +13,8 @@ import re
 import pandas as pd
 from wosereferencesclient_robust import get_all_records as get_cited_refs
 from wosesrclient_robust import InvalidWoSQueryError
+from wosesrclient_robust import WoSAuthenticationError as SRAuthError
+from wosereferencesclient_robust import WoSAuthenticationError as CRAuthError
 from collections import Counter, defaultdict
 
 #Timing returns
@@ -26,7 +28,7 @@ apikey = os.getenv('EXPANDED_APIKEY')
 
 
 params = {'databaseId': 'WOS',
-          'usrQuery': 'UT=WOS:000222471500001',
+          'usrQuery': 'AU=Stanwood',
           'firstRecord': 1,
           'count': 50,
           'optionView': 'SR'
@@ -201,7 +203,7 @@ if __name__ == "__main__":
         search_records = wosesrclient_robust.get_all_records(
             apikey, params, params['firstRecord'], params['count']
         )
-    except InvalidWoSQueryError as e:
+    except (InvalidWoSQueryError, SRAuthError) as e:
         print(e)
         sys.exit(1)
 
@@ -244,6 +246,10 @@ if __name__ == "__main__":
             print(f"Retrieving cited references for {uid}")
             try:
                 cited_blob = get_cited_refs(apikey, cited_params)
+            except CRAuthError as e:
+                # Auth errors should stop the run (bad key / no access)
+                print(e)
+                sys.exit(1)            
             except Exception as e:
                 print(f"  Skipping {uid} due to error: {e}")
                 continue
