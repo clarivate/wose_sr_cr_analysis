@@ -14,6 +14,10 @@ class InvalidWoSQueryError(Exception):
     """Raised when the Web of Science API returns HTTP 400 for an invalid query."""
     pass
 
+class WoSAuthenticationError(Exception):
+    """Raised when the Web of Science API returns 401/403 (invalid key or insufficient access)."""
+    pass
+
 VERBOSE_REQUESTS = os.getenv('WOSESR_VERBOSE_REQUESTS', '0') == '1'
 
 def set_verbose_requests(flag: bool) -> None:
@@ -55,7 +59,17 @@ def _request_with_retries(url: str, headers: Dict[str, str], params: Dict[str, A
                     f"Supported searchable field tags are:\n\n"
                     f"{supported_tags}\n"
                 )
-             
+            # Friendly message for invalid/unauthorized API key
+            if r.status_code in (401, 403):
+                # 401 Unauthorized: invalid/expired key
+                # 403 Forbidden: valid key but insufficient access (endpoint/collection/policy)
+                query = params.get("usrQuery", "[unknown query]")
+
+                raise WoSAuthenticationError(
+                    f"\nWeb of Science API authentication/authorization failed (HTTP {r.status_code}).\n\n"
+                    f"This usually means your API key is invalid/expired, or the key does not have access to this endpoint/collection.\n\n"
+                    f"Check that EXPANDED_APIKEY (or the key you passed) is correct, active, and has WoS Expanded API access.\n"
+                ) 
 
             r.raise_for_status()
             return r
