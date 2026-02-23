@@ -104,6 +104,17 @@ Sheets include:
 - `Raw Data`
 - `Search Summary`
 
+## Example Excel Output
+
+### Cited Work Analysis
+![Cited Work Analysis](docs/cited_work_analysis.jpg)
+
+### Cited Year Analysis
+![Cited Year Analysis](docs/cited_year_analysis.jpg)
+
+### Search Summary
+![Search Summary](docs/summary_tab.jpg)
+
 ## JCR mapping file (`JCR 2025.csv`)
 
 `wose_sr_cr_analysis.py` will attempt to load a file named **`JCR 2025.csv`** from the same folder as the script. It expects two columns:
